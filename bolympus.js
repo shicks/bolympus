@@ -31,6 +31,8 @@ function bolyminput(name) {
   this.chs = function(id,v) { this.gel(id).checked = v>0 }
   this.tx  = function(id)   { return this.gel(id).value }
   this.txs = function(id,v) { this.gel(id).value = v }
+  this.ta  = function(id)	{ return this.gel(id).value.replace(/[^a-zA-Z0-9\?!]/g, '') }
+  this.tas = function(id,v) { this.gel(id).innerHTML = v; this.gel(id).value = v; }
   this.nm  = function(id)   { return parseInt(this.gel(id).value) }
 
   this.dce = function(obj) { return document.createElement(obj) }
@@ -38,6 +40,8 @@ function bolyminput(name) {
   this.dct = function(str) { return document.createTextNode(str) }
   this.ac  = function(p,c) { p.appendChild(c) }
   this.sa  = function(o,a,v) { o.setAttribute(a,v) }
+  
+  this.sanitize_pw = function(v) { return v.replace("/[^"+this.alphabet_regex+"]/g", '') }
 
   this.input_bits = /* start at 95 */
   [ 'Bit 95 (bug?)',
@@ -102,6 +106,7 @@ function bolyminput(name) {
 
   this.adds = [0x38,0x0a,0x12,0x26];
   this.letters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz?!';
+  this.alphabet_regex = 'a-zA-Z0-9\?!';
   
   this.chars = [0,0,0,0,0,0, 0,0,0,0,0,0,0,    /* current value */
 		0,0,0,0,0,0, 0,0,0,0,0,0,0];
@@ -127,6 +132,25 @@ function bolyminput(name) {
     this.sa(input,'maxlength',size);
     return input;
   }
+
+  this.multitext = function(id,rows,cols,value) {
+    input = this.dcei('textarea',id);
+    this.sa(input,'rows',rows);
+    this.sa(input,'cols',cols);
+    this.sa(input,'spellcheck','false');
+    input.innerHTML = value;
+    return input;
+  }
+  this.multilinetext = function(id,rows,cols,onchange,value) {
+    input = this.multitext(id,rows,cols,value);
+    this.sa(input,'style','font-family:monospace;font-size:130%; resize: none;');
+    /* input.onchange = onchange; */
+    this.sa(input,'onkeyup',"this.value = this.value.replace(/[^"+this.alphabet_regex+"\s]/g, ' ')");	//This makes sure the value is in our set.
+    this.sa(input,'onchange','javascript:'+name+'.'+onchange+'()');
+    this.sa(input,'maxlength',rows*cols+1);	// The extra 1 accounts for a space between the second and third groups.
+    return input;
+  }
+
   this.messagetext = function(id,size) {
     input = this.text(id,size,'');
     this.sa(input,'readonly','1');
@@ -166,12 +190,23 @@ function bolyminput(name) {
     this.sa(td,'nowrap','nowrap');
     this.ac(td,this.dct('Password:'));
     this.ac(td,br);
-    this.ac(td,this.monotext('l1','14','decode()',
-			     '000000 0000000'));
-    this.ac(td,br.cloneNode(false));
-    this.ac(td,this.monotext('l2','14','decode()',
-			     '000000 0000000'));
-    this.ac(td,br.cloneNode(false));
+
+//Replace these with one multiline
+//	this.ac(td,this.monotext('l1','14','decode()',
+//				'000000 0000000'));
+//	this.ac(td,br.cloneNode(false));
+//	this.ac(td,this.monotext('l2','14','decode()',
+//				'000000 0000000'));
+//	this.ac(td,br.cloneNode(false));
+//End Replace
+
+//New multiline
+	this.ac(td,this.multilinetext('l3','2','14','decode()',
+			     '012345 6789ABC DEFGHI JKLMNOP'));
+	this.ac(td,br.cloneNode(false));
+//End New
+
+
     this.ac(td,this.dct('Message:'));
     this.ac(td,br.cloneNode(false));
     this.ac(td,this.messagetext('msg',20));
@@ -397,21 +432,33 @@ function bolyminput(name) {
     for (var n=0;n<26;++n) {
       s += this.letters.charAt(this.chars[n]);
     }
-    this.txs('l1', s.substr(0, 6)+ ' ' + s.substr( 6,7))
-    this.txs('l2', s.substr(13,6)+ ' ' + s.substr(19,7))
+//    this.txs('l1', s.substr(0, 6)+ ' ' + s.substr( 6,7))
+//    this.txs('l2', s.substr(13,6)+ ' ' + s.substr(19,7))
+    this.tas('l3', s.substr(0, 6)+ ' ' + s.substr( 6,7)+ ' ' + s.substr(13,6)+ ' ' + s.substr(19,7))
   }
 
   this.decode = function() {
     var error = 0;
     var message = '';
-    var l1 = this.tx('l1');
-    var l2 = this.tx('l2');
+//    var l1 = this.tx('l1');
+//    var l2 = this.tx('l2');
+    var l3 = this.ta('l3');
+	//alert(this.chars);
+//	alert (l3.length);
+	alert(this.ta('l3'));
     for(var n=0; n<7; ++n) {
-      if (n!=7) this.chars[n] = this.letters.indexOf(l1.charAt(n));
-      this.chars[n+6] = this.letters.indexOf(l1.charAt(n+7));
-      if (n!=7) this.chars[n+13] = this.letters.indexOf(l2.charAt(n));
-      this.chars[n+19] = this.letters.indexOf(l2.charAt(n+7));
+      //if (n!=7) this.chars[n] = this.letters.indexOf(l1.charAt(n));
+      //this.chars[n+6] = this.letters.indexOf(l1.charAt(n+7));
+      //if (n!=7) this.chars[n+13] = this.letters.indexOf(l2.charAt(n));
+      //this.chars[n+19] = this.letters.indexOf(l2.charAt(n+7));
+      if(n==7) alert("n = 7");
+      this.chars[n] = this.letters.indexOf(l3.charAt(n));
+      this.chars[n+6] = this.letters.indexOf(l3.charAt(n+6));
+      this.chars[n+13] = this.letters.indexOf(l3.charAt(n+13));
+      this.chars[n+19] = this.letters.indexOf(l3.charAt(n+19));
+      
     }
+//	alert(this.chars);
     if (this.unroll_info()!=0) {
       error |= 2;
       message = 'Bad checksum(s). ';
@@ -462,8 +509,8 @@ function bolyminput(name) {
       this.txs('msg','Failed checksum');
 //       recovering=1;
 //       this.encode();
-      this.calculate_password();
-      this.updatepassword();
+//      this.calculate_password();
+//      this.updatepassword();
     }
     //    alert(error);
   }
