@@ -7,6 +7,9 @@
 			http://www.gnu.org/copyleft/gpl.html
 		This notice must remain intact in all copies,
 		modified or otherwise.
+		
+        Further work and information (C) 2021 JD Fenech
+        under the same license. 
 
 		The coding algorithm used is explained at
 			<write me later>
@@ -26,12 +29,14 @@
    </head>
    <body>
       <h2>Battle of Olympus Password Generator</h2>
-      <div style='border:1pt solid black;background-color:#eee;width:750px;' id='bolym'></div>
+      <div style="display: inline-block; border:1pt solid black;background-color:#eee;padding:1ex;" id='bolym'>
       <script type='text/javascript' src='bolympus.js'></script>
       <script type='text/javascript'><!--
          bolym=new bolyminput('bolym');bolym.write_form();
          setTimeout('bolym.defaults()',30); //-->
       </script>
+      </div>
+      <div id='main_text' style='clear:both; padding-top:1em;'>
       <p>Note: if this is just an empty box, something went wrong.  Try
          Firefox.
       <p>Here is a password generator for the classic NES game,
@@ -52,6 +57,19 @@
       <p>I think the max life is 56 with the golden apple, 28 without.  But
          up to 63 can be entered without a problem.  Starting with only 1 life
          is glitched for me.  Zero is allowed, but I promise you won't get far.
+      <p>The situation where Hermes is summoned to Zeus consists of three regular
+         states and one <em>invalid</em> state. The invalid state is not reachable
+         during regular gameplay, but can be achieved using the passwords. All of
+         these states require that Zeus has been spoken to. Otherwise it will be
+         Zeus in the temple, even with the Hermes-bit set.
+         The states are:
+         <ol start='0'>
+            <li>Zeus has been spoken to, and remains in his temple. Hermes has left a retainer in his temple (sandals+hermes-bits: unset).
+            <li>You've spoken to the retainer in Hermes' temple (this is when the hermes-bit is set). Now Hermes is in Zeus' Temple.
+            <li>You've obtained the sandals from Hermes at Zeus' temple. Upon leaving and returning, both gods will now be in their own temples. The hermes-bit is unset immediately when you obtain the sandals. (sandals: set, hermes-bit: unset)
+            <li><strong>Invalid:</strong> You've obtained the sandals AND set the Hermes-bit. Hermes will give you a password if you speak to him. He will also be in both his and Zeus' temple if you visit them. (sandals: set, hermes-bit: set)
+         </ol>
+             
       <p>So far the decoding mechanism does not deal gracefully with bad
          passwords.  It should be possible to change only the first and
          last character to fix the checksums.  But for some reason, when
@@ -100,15 +118,15 @@
          <li>105: 1st Heart
          <li>106: Key
          <li>107: Power Bracelet
-         <li>108: Reflective Shield
-         <li>109: Fire Shield
+         <li>108: Fire Shield
+         <li>109: Reflective Shield
          <li>110: Sandals
          <li>111: Moonbeam
          <li>112: Argolis Ambrosia
          <li>113: Phthia Ambrosia
-         <li>114: Cyclops Ambrosia
-         <li>115: Forest Ambrosia
-         <li>116: Phrygia Ambrosia?
+         <li>114: Laconia Ambrosia/Laconia Cyclops Defeated
+         <li>115: Peloponessus Ambrosia
+         <li>116: Unknown
          <li>117: Zeus
          <li>118: Golden Apple
          <li>119: 3rd Heart
@@ -116,13 +134,16 @@
          <li>121: Lion Defeated
          <li>122: Lamia Defeated
          <li>123: Flask Filled
-         <li>124-129: unknown
+         <li>124-126: Unknown
+         <li>127: Phrygia Ambrosia
+         <li>128-129: Unknown
          <li>130: Siren Defeated
          <li>131: Gaea Defeated
          <li>132: Cyclops Defeated
          <li>133: Hydra Defeated
-         <li>134: Fire
-         <li>135-136: unknown
+         <li>134: Fire Obtained
+         <li>135: Hermes Summoned by Zeus
+         <li>136-138: Unknown
       </ul>
       <p>A note about how I figured this out:
          I began with a list of all 64
@@ -143,5 +164,6 @@
          pattern.  The checksums were pretty easy since all the characters just
          add to zero, and it was obvious where they were by how passwords
          always changed the first and last characters.
+         </div>
    </body>
 </html>
