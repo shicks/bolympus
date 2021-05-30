@@ -102,10 +102,8 @@ function bolyminput(name) {
     'Phthia',
     'Crete',
     'Phrygia',
-    'Tartarus 1',
-    'Tartarus 2',
-    'Tartarus 3',
-    'Hades' ];
+    'Tartarus'
+     ];
 
   this.key = [0x38,0x0a,0x12,0x26];
   this.letters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz?!';
@@ -252,7 +250,7 @@ function bolyminput(name) {
 
 	// Set Max Life
     this.ac(td,this.dct('Life: '));
-    this.ac(td,this.monotext('life','3','encode()','8'));
+    this.ac(td,this.monotext('life','2','encode()','8'));
     this.ac(td,br.cloneNode(false));
     this.ac(tr,td);
 
