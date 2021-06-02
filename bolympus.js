@@ -48,7 +48,7 @@ function bolyminput(name) {
 
   this.input_bits = /* start at 95 */
   [ 'Bit 95 (bug?)',
-    'Crystal',
+    'Crystal',			/* Graeae Defeated */
     'Flask',
     'Ocarina',
     'Harp',
