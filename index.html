@@ -1,135 +1,169 @@
-<html><head><title>Battle of Olympus</title></head><body>
-<h2>Battle of Olympus Password Generator</h2>
-<div style='border:1pt solid black;background-color:#eee;width:750px;' id='bolym'></div>
-<script type='text/javascript' src='bolympus.js'></script>
-<script type='text/javascript'><!--
-  bolym=new bolyminput('bolym');bolym.write_form();
-  setTimeout('bolym.defaults()',30); //--></script>
+<!DOCTYPE html>
+<html lang="en-US">
+   <!--	Copyright (C) Stephen Hicks 2006
+		Permission to copy or modify is granted under the
+		GNU General Public License available at
+			http://www.gnu.org/copyleft/gpl.html
+		This notice must remain intact in all copies,
+		modified or otherwise.
+		
+        Further work and information (C) 2021 JD Fenech
+        under the same license. 
 
-<p>Note: if this is just an empty box, something went wrong.  Try
-Firefox.
+		The coding algorithm used is explained at
+			<write me later>
 
-<p>Here is a password generator for the classic NES game,
- The Battle of Olympus.  A few notes:
-Of the eight unknown bits (other than 95 which just seems to cause glitches
-and is not set on any password I've seen), I imagine they have to do
-with the Centaur and/or Ladon, and things in Crete, Phrygia, and Tartarus.
-I haven't have a chance to investigate these areas thoroughly yet.
+		Based heavily on the following work:
+			Metroid password generator / decoder
+			Copyright (C) 1992,2004 Joel Yliluoma (http://iki.fi/bisqwit/)
+			Written for http://bisqwit.iki.fi/nesvideos/PasswordGenerators.html
+			Permission to copy and modify is granted under the following terms:
+				The copyright notice is kept unmodified
+				No attempts are made to prevent anyone downloading the source code
 
-<p>At some point I'll go into more detail about the encoding.
-
-<p>Since there are two full checksum characters, only one in 4096=2^12
-passwords are valid, which explains why guessing always fails so
-miserably.  There is also a redundancy of 64 different encodings of
-the same information.  This shows up as a freedom to cycle the characters.
-I therefore hold the second character constant (since the checksum character
-is no good for this), so that changes only affect the parts of the password
-to their right.
-
-<p>The maximum number of salamander skins is 31.
-
-<p>I think the max life is 56 with the golden apple, 28 without.  But
-up to 63 can be entered without a problem.  Starting with only 1 life
-is glitched for me.  Zero is allowed, but I promise you won't get far.
-
-<p>So far the decoding mechanism does not deal gracefully with bad
-passwords.  It should be possible to change only the first and
-last character to fix the checksums.  But for some reason, when
-you enter a bad password, it changes more than that.  I've also
-got a few strange javascript errors I'm not sure how to deal with.
-Regardless, it seems to work fine in Firefox 1.5.
-
-<p>I've written a utility to enter passwords into an emulator
-window automatically (in Linux at least), and may post it at some
-point.
-
-<p>The inspiration to crack this game, as well as how to write such
-a javascript application are due primarily to Bisqwit 
-(http://iki.fi/bisqwit/) and I am therefore grateful for his work.
-
-<p>Steve Hicks (sdh33 at cornell edu)
-
-<h2>Coding Scheme</h2>
-<p>BoO passwords have 26 characters from an alphabet of 64.  In order,
-0-9 correspond to 0x00-0x09, A-Z to 0x0A-0x24, a-z to 0x25-0x3D, and
-? and ! to 0x3E and 0x3F.  Thus, each character is 6 bits, and all arithmetic
-we will do from now on is thus modulo 64.
-
-<p>The actual information content of the password is 23 characters long.
-Two characters are used for checksums and one is arbitrary.  Call the
-23 characters a(1) through a(23).  The first checksum is to pick a(0) such that
-a(0)+...+a(23)=0x00.  Now pick an arbitrary character c(0).  Compute c(i+1)=[c(i)^a(i)]+d(i)
-where d(i)=0x38,0x0A,0x12,0x26,... for i=0,1,2,3 and repeating with a period of
-4 beyond that.
-
-<p>We now have c(0)...c(24), giving 25 characters.  The last character c(25) is
-computed soo that c(0)+...+c(25)=0x00.  If both of these checksums are satisfied,
-then the password is valid.
-
-<p>Regarding the value of each bit, use the following chart (in case the javascript doesn't show up):
-<ul><li>0-3: location
-<li>4-7: olives in BCD, ones place
-<li>8-11: olives in BCD, tens place
-<li>12-16: salamander skins
-<li>17-52: hero name, 0x3F for blank
-<li>53-88: heroine name
-<li>89-94: life
-<li>96: Crystal
-<li>97: Flask
-<li>98: Ocarina
-<li>99: Harp
-<li>100: Divine Sword
-<li>101: Nymph Sword
-<li>102: Staff of Fennel
-<li>103: Club
-<li>104: 2nd Heart
-<li>105: 1st Heart
-<li>106: Key
-<li>107: Power Bracelet
-<li>108: Reflective Shield
-<li>109: Fire Shield
-<li>110: Sandals
-<li>111: Moonbeam
-<li>112: Argolis Ambrosia
-<li>113: Phthia Ambrosia
-<li>114: Cyclops Ambrosia
-<li>115: Forest Ambrosia
-<li>116: Phrygia Ambrosia?
-<li>117: Zeus
-<li>118: Golden Apple
-<li>119: 3rd Heart
-<li>120: Attica Child Rescued
-<li>121: Lion Defeated
-<li>122: Lamia Defeated
-<li>123: Flask Filled
-<li>124-129: unknown
-<li>130: Siren Defeated
-<li>131: Gaea Defeated
-<li>132: Cyclops Defeated
-<li>133: Hydra Defeated
-<li>134: Fire
-<li>135-136: unknown
-</ul>
-
-<p>A note about how I figured this out:
-I began with a list of all 64
-null passwords (names 000000 and not collecting any items - FCEU's "~" 
-key, which runs the game at super speed, made this a LOT easier).  XORing
-any pair of these together, shows strong (but not quite fully-ordered)
-patterns, as well as XORing adjacent bits.  I also XORed with slightly
-more advanced passwords (at a different location, with 1 or more
-olives, etc, and picking the null password that was most similar).
-Finally, what really started to open it up was changing the name by
-one or two letters.  I noticed that there was a single byte, to the
-left of which it matched one null password and the right matched the
-other ("xorpass | grep 00" was a lifesaver, especially since it
-highlights the zeros in red).  In light of that, and noticing repeated
-patterns in the set of null passwords, I tried finding a recursion
-formula for the next letter given the previous that would work for all
-64 passwords with the same meaning, and came up with this XOR-ADD
-pattern.  The checksums were pretty easy since all the characters just
-add to zero, and it was obvious where they were by how passwords
-always changed the first and last characters.
-
-
-</body></html>
+		Reverse engineering by unknown - algorithm copied from SnowBro's doc
+	-->
+   <head>
+      <meta charset="utf-8">
+      <title>Battle of Olympus</title>
+   </head>
+   <body>
+      <h2>Battle of Olympus Password Generator</h2>
+      <div style="display: inline-block; border:1pt solid black;background-color:#eee;padding:1ex;" id='bolym'>
+      <script type='text/javascript' src='bolympus.js'></script>
+      <script type='text/javascript'><!--
+         bolym=new bolyminput('bolym');bolym.write_form();
+         setTimeout('bolym.defaults()',30); //-->
+      </script>
+      </div>
+      <div id='main_text' style='clear:both; padding-top:1em;'>
+      <p>Note: if this is just an empty box, something went wrong.  Try
+         Firefox.
+      <p>Here is a password generator for the classic NES game,
+         The Battle of Olympus.  A few notes:
+         Of the eight unknown bits (other than 95 which just seems to cause glitches
+         and is not set on any password I've seen), I imagine they have to do
+         with the Centaur and/or Ladon, and things in Crete, Phrygia, and Tartarus.
+         I haven't have a chance to investigate these areas thoroughly yet.
+      <p>At some point I'll go into more detail about the encoding.
+      <p>Since there are two full checksum characters, only one in 4096=2^12
+         passwords are valid, which explains why guessing always fails so
+         miserably.  There is also a redundancy of 64 different encodings of
+         the same information.  This shows up as a freedom to cycle the characters.
+         I therefore hold the second character constant (since the checksum character
+         is no good for this), so that changes only affect the parts of the password
+         to their right.
+      <p>The maximum number of salamander skins is 31.
+      <p>I think the max life is 56 with the golden apple, 28 without.  But
+         up to 63 can be entered without a problem.  Starting with only 1 life
+         is glitched for me.  Zero is allowed, but I promise you won't get far.
+      <p>The situation where Hermes is summoned to Zeus consists of three regular
+         states and one <em>invalid</em> state. The invalid state is not reachable
+         during regular gameplay, but can be achieved using the passwords. All of
+         these states require that Zeus has been spoken to. Otherwise it will be
+         Zeus in the temple, even with the Hermes-bit set.
+         The states are:
+         <ol start='0'>
+            <li>Zeus has been spoken to, and remains in his temple. Hermes has left a retainer in his temple (sandals+hermes-bits: unset).
+            <li>You've spoken to the retainer in Hermes' temple (this is when the hermes-bit is set). Now Hermes is in Zeus' Temple.
+            <li>You've obtained the sandals from Hermes at Zeus' temple. Upon leaving and returning, both gods will now be in their own temples. The hermes-bit is unset immediately when you obtain the sandals. (sandals: set, hermes-bit: unset)
+            <li><strong>Invalid:</strong> You've obtained the sandals AND set the Hermes-bit. Hermes will give you a password if you speak to him. He will also be in both his and Zeus' temple if you visit them. (sandals: set, hermes-bit: set)
+         </ol>
+             
+      <p>So far the decoding mechanism does not deal gracefully with bad
+         passwords.  It should be possible to change only the first and
+         last character to fix the checksums.  But for some reason, when
+         you enter a bad password, it changes more than that.  I've also
+         got a few strange javascript errors I'm not sure how to deal with.
+         Regardless, it seems to work fine in Firefox 1.5.
+      <p>I've written a utility to enter passwords into an emulator
+         window automatically (in Linux at least), and may post it at some
+         point.
+      <p>The inspiration to crack this game, as well as how to write such
+         a javascript application are due primarily to Bisqwit 
+         (http://iki.fi/bisqwit/) and I am therefore grateful for his work.
+      <p><a href="http://pages.physics.cornell.edu/~shicks/bolympus.html">Steve Hicks</a> (<a href="mailto:sdh33@cornell.edu">sdh33 at cornell edu</a>)
+      <h2>Coding Scheme</h2>
+      <p>BoO passwords have 26 characters from an alphabet of 64.  In order,
+         0-9 correspond to 0x00-0x09, A-Z to 0x0A-0x24, a-z to 0x25-0x3D, and
+         ? and ! to 0x3E and 0x3F.  Thus, each character is 6 bits, and all arithmetic
+         we will do from now on is thus modulo 64.
+      <p>The actual information content of the password is 23 characters long.
+         Two characters are used for checksums and one is arbitrary.  Call the
+         23 characters a(1) through a(23).  The first checksum is to pick a(0) such that
+         a(0)+...+a(23)=0x00.  Now pick an arbitrary character c(0).  Compute c(i+1)=[c(i)^a(i)]+d(i)
+         where d(i)=0x38,0x0A,0x12,0x26,... for i=0,1,2,3 and repeating with a period of
+         4 beyond that.
+      <p>We now have c(0)...c(24), giving 25 characters.  The last character c(25) is
+         computed soo that c(0)+...+c(25)=0x00.  If both of these checksums are satisfied,
+         then the password is valid.
+      <p>Regarding the value of each bit, use the following chart (in case the javascript doesn't show up):
+      <ul>
+         <li>0-3: location
+         <li>4-7: olives in BCD, ones place
+         <li>8-11: olives in BCD, tens place
+         <li>12-16: salamander skins
+         <li>17-52: hero name, 0x3F for blank
+         <li>53-88: heroine name
+         <li>89-94: life
+         <li>96: Crystal
+         <li>97: Flask
+         <li>98: Ocarina
+         <li>99: Harp
+         <li>100: Divine Sword
+         <li>101: Nymph Sword
+         <li>102: Staff of Fennel
+         <li>103: Club
+         <li>104: 2nd Heart
+         <li>105: 1st Heart
+         <li>106: Key
+         <li>107: Power Bracelet
+         <li>108: Fire Shield
+         <li>109: Reflective Shield
+         <li>110: Sandals
+         <li>111: Moonbeam
+         <li>112: Argolis Ambrosia
+         <li>113: Phthia Ambrosia
+         <li>114: Laconia Ambrosia/Laconia Cyclops Defeated
+         <li>115: Peloponessus Ambrosia
+         <li>116: Unknown
+         <li>117: Zeus
+         <li>118: Golden Apple
+         <li>119: 3rd Heart
+         <li>120: Attica Child Rescued
+         <li>121: Lion Defeated
+         <li>122: Lamia Defeated
+         <li>123: Flask Filled
+         <li>124-126: Unknown
+         <li>127: Phrygia Ambrosia
+         <li>128-129: Unknown
+         <li>130: Siren Defeated
+         <li>131: Gaea Defeated
+         <li>132: Cyclops Defeated
+         <li>133: Hydra Defeated
+         <li>134: Fire Obtained
+         <li>135: Hermes Summoned by Zeus
+         <li>136-138: Unknown
+      </ul>
+      <p>A note about how I figured this out:
+         I began with a list of all 64
+         null passwords (names 000000 and not collecting any items - FCEU's "~" 
+         key, which runs the game at super speed, made this a LOT easier).  XORing
+         any pair of these together, shows strong (but not quite fully-ordered)
+         patterns, as well as XORing adjacent bits.  I also XORed with slightly
+         more advanced passwords (at a different location, with 1 or more
+         olives, etc, and picking the null password that was most similar).
+         Finally, what really started to open it up was changing the name by
+         one or two letters.  I noticed that there was a single byte, to the
+         left of which it matched one null password and the right matched the
+         other ("xorpass | grep 00" was a lifesaver, especially since it
+         highlights the zeros in red).  In light of that, and noticing repeated
+         patterns in the set of null passwords, I tried finding a recursion
+         formula for the next letter given the previous that would work for all
+         64 passwords with the same meaning, and came up with this XOR-ADD
+         pattern.  The checksums were pretty easy since all the characters just
+         add to zero, and it was obvious where they were by how passwords
+         always changed the first and last characters.
+         </div>
+   </body>
+</html>

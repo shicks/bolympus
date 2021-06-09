@@ -6,6 +6,9 @@
     http://www.gnu.org/copyleft/gpl.html
   This notice must remain intact in all copies,
   modified or otherwise.
+  
+   Further work and information (C) 2021 JD Fenech
+   under the same license. 
 
   The coding algorithm used is explained at
     <write me later>
@@ -31,6 +34,8 @@ function bolyminput(name) {
   this.chs = function(id,v) { this.gel(id).checked = v>0 }
   this.tx  = function(id)   { return this.gel(id).value }
   this.txs = function(id,v) { this.gel(id).value = v }
+  this.ta  = function(id)	{ return this.gel(id).value.replace(/[^a-zA-Z0-9\?!]/g, '') }
+  this.tas = function(id,v) { this.gel(id).innerHTML = v; this.gel(id).value = v; }
   this.nm  = function(id)   { return parseInt(this.gel(id).value) }
 
   this.dce = function(obj) { return document.createElement(obj) }
@@ -38,10 +43,12 @@ function bolyminput(name) {
   this.dct = function(str) { return document.createTextNode(str) }
   this.ac  = function(p,c) { p.appendChild(c) }
   this.sa  = function(o,a,v) { o.setAttribute(a,v) }
+  
+  this.sanitize_pw = function(v) { return v.replace("/[^"+this.alphabet_regex+"]/g", '') }
 
   this.input_bits = /* start at 95 */
   [ 'Bit 95 (bug?)',
-    'Crystal',
+    'Crystal',			/* Graeae Defeated */
     'Flask',
     'Ocarina',
     'Harp',
@@ -53,18 +60,18 @@ function bolyminput(name) {
     '1st Heart',
     'Key',
     'Power Bracelet',
-    'Reflective Shield',
     'Fire Shield',
+    'Reflective Shield',
     'Sandals',
     'Moonbeam',
-    'Argolis Ambrosia',
-    'Phthia Ambrosia',
-    'Cyclops Ambrosia',
-    'Forest Ambrosia',
-    'Phrygia Ambrosia?',
-    'Zeus',
-    'Golden Apple',
-    '3rd Heart',
+    'Argolis Ambrosia',	/* In Salamander Pit */
+    'Phthia Ambrosia',	/* Near Hephaestus temple */
+    'Laconia Ambrosia',	/* Laconia Cyclops Defeated */
+    'Peloponessus Ambrosia',	/* In Cyclops Lair */
+    'Bit 116',
+    'Zeus\' Blessing',
+    'Golden Apple',	/* Ladon Defeated */
+    '3rd Heart',	/* Minotaur Defeated */
     'Attica Child Rescued',
     'Lion Defeated',
     'Lamia Defeated',
@@ -72,15 +79,15 @@ function bolyminput(name) {
     'Bit 124',
     'Bit 125',
     'Bit 126',
-    'Bit 127',
+    'Phrygia Ambrosia',
     'Bit 128',
     'Bit 129',
     'Siren Defeated',
     'Gaea Defeated',
     'Cyclops Defeated',
     'Hydra Defeated',
-    'Fire',
-    'Bit 135',
+    'Learned Fire',
+    'Hermes Summoned',
     'Bit 136',
     'Bit 137',
     'Bit 138'];
@@ -95,13 +102,12 @@ function bolyminput(name) {
     'Phthia',
     'Crete',
     'Phrygia',
-    'Tartarus 1',
-    'Tartarus 2',
-    'Tartarus 3',
-    'Hades' ];
+    'Tartarus'
+     ];
 
-  this.adds = [0x38,0x0a,0x12,0x26];
+  this.key = [0x38,0x0a,0x12,0x26];
   this.letters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz?!';
+  this.alphabet_regex = 'a-zA-Z0-9\?!';
   
   this.chars = [0,0,0,0,0,0, 0,0,0,0,0,0,0,    /* current value */
 		0,0,0,0,0,0, 0,0,0,0,0,0,0];
@@ -122,11 +128,28 @@ function bolyminput(name) {
   this.monotext = function(id,size,onchange,value) {
     input = this.text(id,size,value);
     this.sa(input,'style','font-family:monospace;font-size:130%');
-    /* input.onchange = onchange; */
     this.sa(input,'onchange','javascript:'+name+'.'+onchange+'()');
     this.sa(input,'maxlength',size);
     return input;
   }
+
+  this.multitext = function(id,rows,cols,value) {
+    input = this.dcei('textarea',id);
+    this.sa(input,'rows',rows);
+    this.sa(input,'cols',cols);
+    this.sa(input,'spellcheck','false');
+    input.innerHTML = value;
+    return input;
+  }
+  this.multilinetext = function(id,rows,cols,onchange,value) {
+    input = this.multitext(id,rows,cols,value);
+    this.sa(input,'style','font-family:monospace;font-size:130%; resize: none;');
+    this.sa(input,'onkeyup',"this.value = this.value.replace(/[^"+this.alphabet_regex+"\s]/g, ' ')");	//This makes sure the value is in our set.
+    this.sa(input,'onchange','javascript:'+name+'.'+onchange+'()');
+    this.sa(input,'maxlength',rows*cols+1);	// The extra 1 accounts for a space between the second and third groups.
+    return input;
+  }
+
   this.messagetext = function(id,size) {
     input = this.text(id,size,'');
     this.sa(input,'readonly','1');
@@ -141,7 +164,6 @@ function bolyminput(name) {
       this.ac(input,opt);
     }
     this.sa(input,'onchange','javascript:'+name+'.'+onchange+'()');
-    /* input.onchange = onchange; */
     return input;
   }
   this.bitbox = function(num,text,onchange) {
@@ -150,7 +172,6 @@ function bolyminput(name) {
     this.sa(input,'value',0);
     this.sa(input,'type','checkbox');
     this.sa(input,'onchange','javascript:'+name+'.'+onchange+'()');
-    /* input.onchange = onchange; */
     /* maybe use a label with name/for pair... */
     this.ac(sp,input);
     this.ac(sp,this.dct(text));
@@ -158,32 +179,54 @@ function bolyminput(name) {
   }
 
   this.write_form = function() {
-    tab = this.dce('table');
-    tr = this.dce('tr');
-    td = this.dce('td');
+    tab = this.dce('div'); // Overall table
+    tr = this.dce('div'); // A row
+    td = this.dce('div'); // A cell
     br = this.dce('br');
-    this.sa(td,'valign','top');
-    this.sa(td,'nowrap','nowrap');
+
+	// Set the table information
+	this.sa(tab,'style','width:max-content;');
+	this.sa(tab,'id','T1');
+	
+	style = this.dce('style');	// Add style.
+	this.sa(style,'type','text/css');
+	this.ac(style,this.dct('.bolym_col { float:left; margin-right:1ex; }'));
+	this.ac(tab,style);
+
+	// Set the current row information.
+	this.sa(tr,'style','width:max-content;clear:both;');
+	/* We really only need one row, but I'm keeping it this way
+	   so we could add another if we wanted. */
+    
+    // Set the cell information
+    this.sa(td,'class','bolym_col');
+    
+    // Password Text
     this.ac(td,this.dct('Password:'));
     this.ac(td,br);
-    this.ac(td,this.monotext('l1','14','decode()',
-			     '000000 0000000'));
-    this.ac(td,br.cloneNode(false));
-    this.ac(td,this.monotext('l2','14','decode()',
-			     '000000 0000000'));
-    this.ac(td,br.cloneNode(false));
+
+	// New Password Display
+	this.ac(td,this.multilinetext('l1','2','14','decode()',
+			     '012345 6789ABC DEFGHI JKLMNOP'));
+	this.ac(td,br.cloneNode(false));
+
+	// Message Display
     this.ac(td,this.dct('Message:'));
     this.ac(td,br.cloneNode(false));
     this.ac(td,this.messagetext('msg',20));
     this.ac(td,br.cloneNode(false));
 
+	// Encoding Selection
     nums=[];
     for (var i=0;i<64;++i) { nums.push(i.toString()); }
     this.ac(td,this.dct('Encoding: '));
     this.ac(td,this.select('enc',nums,'encode()'));
     this.ac(td,br.cloneNode(false));
+
+	// Visual Separator
     this.ac(td,this.dce('hr'));
 
+	// Player-set Names
     this.ac(td,this.dct('Hero: '));
     this.ac(td,this.monotext('name1','6','encode()','Orfeus'));
     this.ac(td,br.cloneNode(false));
@@ -191,24 +234,29 @@ function bolyminput(name) {
     this.ac(td,this.monotext('name2','6','encode()','Helene'));
     this.ac(td,br.cloneNode(false));
 
+	// Start Location
     this.ac(td,this.dct('Location: '));
     this.ac(td,this.select('loc',this.input_locations,'encode()'));
     this.ac(td,br.cloneNode(false));
 
+	// Set Currency/Olives
     this.ac(td,this.dct('Olives: '));
     this.ac(td,this.monotext('olives','2','encode()','0'));
+
+	// Set Salamander Skins
     this.ac(td,this.dct(' Skins: '));
     this.ac(td,this.monotext('skins','2','encode()','0'));
     this.ac(td,br.cloneNode(false));
+
+	// Set Max Life
     this.ac(td,this.dct('Life: '));
-    this.ac(td,this.monotext('life','3','encode()','8'));
+    this.ac(td,this.monotext('life','2','encode()','8'));
     this.ac(td,br.cloneNode(false));
     this.ac(tr,td);
 
     /* New column */
-    td = this.dce('td');
-    this.sa(td,'valign','top');
-    this.sa(td,'nowrap','nowrap');
+    td = this.dce('div'); // A cell
+    this.sa(td,'class','bolym_col');
     
     colsize = 0;
     max_colsize = 14;
@@ -216,9 +264,8 @@ function bolyminput(name) {
 	this.ac(td,this.bitbox(i,this.input_bits[i-95],'encode()'));
 	if (++colsize>max_colsize) {
 	    this.ac(tr,td);
-	    td = this.dce('td');
-	    this.sa(td,'valign','top');
-	    this.sa(td,'nowrap','nowrap');
+	    td = this.dce('div'); // A cell
+	    this.sa(td,'class','bolym_col');
 	    colsize = 0;
 	} else {
 	    this.ac(td,br.cloneNode(false));
@@ -368,12 +415,12 @@ function bolyminput(name) {
     for (var i=0;i<24;++i) {
       xor = this.gr(6*i-6,6);
       msg += (xor.toString(16) + ' ');
-      add = this.adds[i%4];
+      add = this.key[i%4];
       cur = ((cur^xor)+add)&63;
       this.chars[i+1] = cur;
       sum -= cur;
     }
-    //    alert(msg);
+
     sum &= 63;
     this.chars[25] = sum;
   }
@@ -382,13 +429,13 @@ function bolyminput(name) {
     var sum = 0;
     var msg = '';
     for (var i=0;i<24;++i) {
-      this.sr(6*i-6,6,this.chars[i]^((this.chars[i+1]-this.adds[i%4])&63));
+      this.sr(6*i-6,6,this.chars[i]^((this.chars[i+1]-this.key[i%4])&63));
       sum += this.chars[i];
       msg += this.gr(6*i-6,6).toString(16)+' ';
     }
-    //    alert(msg);    
+
     sum += this.chars[24]+this.chars[25];
-    
+
     return sum;
   }
 
@@ -397,21 +444,19 @@ function bolyminput(name) {
     for (var n=0;n<26;++n) {
       s += this.letters.charAt(this.chars[n]);
     }
-    this.txs('l1', s.substr(0, 6)+ ' ' + s.substr( 6,7))
-    this.txs('l2', s.substr(13,6)+ ' ' + s.substr(19,7))
+
+    this.tas('l1', s.substr(0, 6)+ ' ' + s.substr( 6,7)+ ' ' + s.substr(13,6)+ ' ' + s.substr(19,7))
   }
 
   this.decode = function() {
     var error = 0;
     var message = '';
-    var l1 = this.tx('l1');
-    var l2 = this.tx('l2');
-    for(var n=0; n<7; ++n) {
-      if (n!=7) this.chars[n] = this.letters.indexOf(l1.charAt(n));
-      this.chars[n+6] = this.letters.indexOf(l1.charAt(n+7));
-      if (n!=7) this.chars[n+13] = this.letters.indexOf(l2.charAt(n));
-      this.chars[n+19] = this.letters.indexOf(l2.charAt(n+7));
+    var l1 = this.ta('l1');
+
+    for(var n=0; n<26; ++n) {
+      this.chars[n] = this.letters.indexOf(l1.charAt(n));
     }
+
     if (this.unroll_info()!=0) {
       error |= 2;
       message = 'Bad checksum(s). ';
@@ -462,9 +507,8 @@ function bolyminput(name) {
       this.txs('msg','Failed checksum');
 //       recovering=1;
 //       this.encode();
-      this.calculate_password();
-      this.updatepassword();
+//      this.calculate_password();
+//      this.updatepassword();
     }
-    //    alert(error);
   }
 }
