@@ -81,7 +81,7 @@ function bolyminput(name) {
     'Bit 126',
     'Phrygia Ambrosia',
     'Bit 128',
-    'Bit 129',
+    'Hades Defeated',
     'Siren Defeated',
     'Gaea Defeated',
     'Cyclops Defeated',
